@@ -3,7 +3,7 @@
 #include "blob.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Blob::Blob(std::vector<cv::Point> _contour) {
+Blob::Blob(std::vector<cv::Point>& _contour) {
 
     currentContour = _contour;
 
@@ -24,6 +24,10 @@ Blob::Blob(std::vector<cv::Point> _contour) {
     blnCurrentMatchFoundOrNewBlob = true;
 
     intNumOfConsecutiveFramesWithoutAMatch = 0;
+    //_contour.clear();
+//    currentContour.clear();
+//    currentContour.resize(0);
+  //  _contour.resize(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

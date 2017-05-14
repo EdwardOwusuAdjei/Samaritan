@@ -9,7 +9,7 @@ void saver::savevideo(string& date, vector<Mat>& frame)
 {
 
     VideoWriter vidwrit;
-    vidwrit.open(date+".MP4",CV_FOURCC('X','2','6','4'),25,Size(320,240),true);
+    vidwrit.open(date+".MP4",CV_FOURCC('X','2','6','4'),17,Size(320,240),true);
     for(size_t i = 0;i <frame.size();++i)
     {
         vidwrit.write(frame[i]);
@@ -17,6 +17,8 @@ void saver::savevideo(string& date, vector<Mat>& frame)
     }
     vidwrit.release();
     frame.clear();
+    frame.resize(0);
+    //frame.~vector();
 }
 
 void saver::savepicture(string &date,Mat frame)

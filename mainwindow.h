@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include "threading.h"
 #include <string>
+
+
+#include "facial.h"
+#include <future>
 using namespace std;
 
 namespace Ui {
@@ -55,6 +59,8 @@ private slots:
 
 
     void on_comboBox_2_currentIndexChanged(const QString &arg1);
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::MainWindow *ui;

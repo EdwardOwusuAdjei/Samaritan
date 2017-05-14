@@ -35,9 +35,9 @@ int notify::notifyselected(vector<string> &ip)
 
         strcpy(message, alert.c_str());
 
+     //  size_t imgsize = img.total()*img.elemSize();
 
-
-        if( send(sock , message , strlen(message ), 0) < 0)
+        if( send(sock , message , strlen(message), 0) < 0)
         {
 
             return 1;
@@ -49,5 +49,6 @@ int notify::notifyselected(vector<string> &ip)
         close(sock);
     }
     ip.clear();
+    ip.resize(0);
     return 0;
 }

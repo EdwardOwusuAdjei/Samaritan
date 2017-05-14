@@ -1,10 +1,7 @@
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "coreprocess.h"
-
-#include "facial.h"
-#include <future>
-
 static int b = 1;
 MainWindow* MainWindow::s_instance = NULL;
 static bool loopbreaker;
@@ -118,18 +115,18 @@ void MainWindow::on_radioButton_2_clicked(bool checked)
 
 void MainWindow::on_radioButton_2_toggled(bool checked)
 {
-    if(checked)
-    {
-        //   ui->comboBox->hide();
-        ui->comboBox_2->hide();
-        ui->label_7->hide();
-    }
-    else
-    {
-        //  ui->comboBox->show();
-        ui->comboBox_2->show();
-        ui->label_7->show();
-    }
+//    if(checked)
+//    {
+//        //   ui->comboBox->hide();
+//        ui->comboBox_2->hide();
+//        ui->label_7->hide();
+//    }
+//    else
+//    {
+//        //  ui->comboBox->show();
+//        ui->comboBox_2->show();
+//        ui->label_7->show();
+//    }
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -138,7 +135,7 @@ void MainWindow::on_pushButton_clicked()
     loopbreaker = true;
 
 
-    // coreprocess cp("/home/edward/ComputerVision_/new.avi");
+  //  coreprocess cp("/home/edward/ComputerVision_/new.avi");
     std::unique_ptr<coreprocess>cp(new coreprocess(0,1));
 
 
@@ -165,28 +162,33 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_comboBox_2_currentIndexChanged(const QString &arg1)
 {
-    QString selectedvid = ui->comboBox_2->currentText();
-    if(selectedvid == "1")
-    {
+   // QString selectedvid = ui->comboBox_2->currentText();
+//    if(selectedvid == "1")
+//    {
 
-        //control = 1;
-        // cv::VideoCapture vc(1);
-        //        ui->label->clear();
+//        //control = 1;
+//        // cv::VideoCapture vc(1);
+//        //        ui->label->clear();
 
-        // QApplication a();
-        //MainWindow w;
-        //  aftermain(w,vc);
-        //  coreprocess *cp = new coreprocess();
-        //capVideo.open(1);
+//        // QApplication a();
+//        //MainWindow w;
+//        //  aftermain(w,vc);
+//        //  coreprocess *cp = new coreprocess();
+//        //capVideo.open(1);
 
-        //  cp->EntryPoint(w,3,1);
-    }
-    else if(selectedvid == "2")
-    {
-        facial fac;
-        fac.stopfacial();
-        // ui->label_2->clear();
-    }
+//        //  cp->EntryPoint(w,3,1);
+//    }
+//    else if(selectedvid == "2")
+//    {
+//        facial fac;
+//        fac.stopfacial();
+//        // ui->label_2->clear();
+//    }
 
 }
 
+
+void MainWindow::on_pushButton_2_clicked()
+{
+   QApplication::exit(0);
+}
