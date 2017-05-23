@@ -78,8 +78,8 @@ void inline coreprocess::aftermain()
         
         if(i % 2 == 0)
         {
-            capVec[1] >> imgFrame1;
-            capVec[1] >> imgFrame2;
+            capVec[0] >> imgFrame1;
+            capVec[0] >> imgFrame2;
         }
         else{
             capVec[0] >> imgFrame1;
