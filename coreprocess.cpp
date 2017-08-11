@@ -1,129 +1,80 @@
 #include "coreprocess.h"
-
-
-coreprocess::coreprocess(std::string index)
+coreprocess::coreprocess()
 {
-    
-    //chck here
-    capVec.clear();
-    cv::VideoCapture vc;
-    
-    cv::VideoCapture cap;
-    vc.open(index);
-    
-    capVec.push_back(vc);
-    capVec.push_back(cap);
-    
-    
+
 }
 
-coreprocess::coreprocess(int index, int index2)
+bool coreprocess::canCapture(int source,int pos)
 {
-    capVec.clear();
-    cv::VideoCapture vc;
-    
-    cv::VideoCapture cap;
-    vc.open(index);
-    vc.set(CV_CAP_PROP_FRAME_WIDTH,320);
-    vc.set(CV_CAP_PROP_FRAME_HEIGHT,240);
-    cap.open(index2);
-    cap.set(CV_CAP_PROP_FRAME_WIDTH,320);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT,240);
-    
-    capVec.push_back(vc);
-    capVec.push_back(cap);
+    bcanCapture = vctry.open(source);
+    if(bcanCapture)
+    {
+        labelpos = pos;
+        return true;
+    }
+    return false;
 }
 
-void coreprocess::EntryPoint()
+bool coreprocess::canCapture(string source,int pos)
 {
-    //might doo some basic check here.
-    aftermain();
-    
+    bcanCapture = vctry.open(source);
+    if(bcanCapture)
+    {
+        labelpos = pos;
+        return true;
+    }
+    return false;
 }
-void inline coreprocess::aftermain()
+
+thread coreprocess::aftermainthread()
 {
-    
-    cv::Mat imgFrame1;
-    cv::Mat imgFrame2;
-    cv::Mat imgFrame1Copy ;
-    cv::Mat imgFrame2Copy ;
-    cv::Mat imgFrame3;
-    cv::Mat imgThreshCopy ;
-    QImage img;
+    return std::thread([=]{coreprocess::aftermain();});
+}
 
-    cv::Mat imgDifference;
-    cv::Mat imgThresh;
-    cv::Mat structuringElement5x5;
-    cv::Point detectionline[2];
-    int line =  0;
-    saver sv;
-    static int count = 0;
-    vector<cv::Mat> MATRIX;
-    vector<cv::Mat> MATRIX2;
-
-    vector<string> ips;
-    
+void  coreprocess::aftermain()
+{
+    vctry >> imgFrame1;
+    if(imgFrame1.channels() == 1)
+    {
+        channelone = true;
+    }
     detectionline[0].x = 0;
     detectionline[0].y = imgFrame1.size().height/2;
     detectionline[1].x = imgFrame1.size().width;
     detectionline[1].y = imgFrame1.size().height/2;
-    
-    static int record;
-    static int record2;
-    int rec= 0,rec2 = 0;
-    //int frameCount = 2;
+    structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5,5));//The function constructs and returns the structuring element that can be further passed to cv::erode,cv::dilate or cv::morphologyEx.
 
-    int  i = 1;
     while(true){
-        
-        if(i % 2 == 0)
-        {
-            capVec[0] >> imgFrame1;
-            capVec[0] >> imgFrame2;
-        }
-        else{
-            capVec[0] >> imgFrame1;
-            capVec[0] >> imgFrame2;
-            
-        }
         if(MainWindow::instance()->breakloop())
         {
             break;
         }
-        line = imgFrame1.size().height/2;
+        vctry >> imgFrame1;
+        vctry >> imgFrame2;
+
+        line = imgFrame1.size().height;
         imgFrame3 = imgFrame1.clone();
-        
-        
-        
-        
-        
-        
         
         imgFrame1Copy = imgFrame1.clone();
         imgFrame2Copy = imgFrame2.clone();
-        
-        cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
-        cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
-        
+        if(!channelone)
+        {
+            cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
+            cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
+        }
         cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);//eddie used you to read reduce noise so i can find the absdiff
         cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
         
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
-        
-        cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);//now here i take out pixels above thirty to 255 who matter :) now make it black or white
-        
-        
-        
-        structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5,5));//The function constructs and returns the structuring element that can be further passed to cv::erode,cv::dilate or cv::morphologyEx.
-        
+        //30
+        cv::threshold(imgDifference, imgThresh, MainWindow::instance()->sensitivity(), 255.0, CV_THRESH_BINARY);//now here i take out pixels above thirty to 255 who matter :) now make it black or white
+
         cv::dilate(imgThresh, imgThresh, structuringElement5x5);//functions to reduce noise again
         cv::dilate(imgThresh, imgThresh, structuringElement5x5);
         cv::erode(imgThresh, imgThresh, structuringElement5x5);
         
-        
+
         imgThreshCopy = imgThresh.clone();
-        
-        //   std::vector<std::vector<cv::Point> > contours;
 
         std::vector<std::vector<cv::Point> > contours;
         cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
@@ -143,7 +94,7 @@ void inline coreprocess::aftermain()
         
         for (auto &convexHull : convexHulls) {
             Blob possibleBlob(convexHull);
-            //  counting ;
+            //  Necessary but could forget about it later
             if (possibleBlob.currentBoundingRect.area() > 100 &&
                     possibleBlob.dblCurrentAspectRatio >= 0.2 &&
                     possibleBlob.dblCurrentAspectRatio <= 1.25 &&
@@ -156,283 +107,130 @@ void inline coreprocess::aftermain()
         }
 
 
-        //std::cout<<"Size is " <<blobs.size()<<"Size of other "<<currentFrameBlobs.size()<<std::endl;
         DrawContours(imgThresh.size(), currentFrameBlobs);//image CurrentFrameBlobs
         
-        if (blnFirstFrame == true) {
-            for (auto &currentFrameBlob : currentFrameBlobs) {
-                blobs.push_back(currentFrameBlob);
-            }
+
+        for (auto &currentFrameBlob : currentFrameBlobs) {
+            blobs.push_back(currentFrameBlob);
         }
-        else {
-            MatchCurrentFrameBlobsToExistingBlobsVector(blobs, currentFrameBlobs);
-        }
+
         
         DrawContours(imgThresh.size(), blobs);//image Blobs
         
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
         
         DrawBlobInfoOnFrame(blobs, imgFrame2Copy);
-        bool blnAtLeastOneBlobCrossedTheLine = hasblobcrossed(blobs, line, count);
-        if(i % 2 == 0)
-        {
-            
-            if (blnAtLeastOneBlobCrossedTheLine == true) {
-                // cv::line(imgFrame2Copy, detectionline[0], detectionline[1], SCALAR_GREEN, 7);
-                cv::line(imgFrame2Copy, cv::Point(0,imgFrame1.size().height/2),cv::Point(imgFrame1.size().width,imgFrame1.size().height/2), SCALAR_GREEN, 2);
-                time_t now = time(0);
-                char* dt = ctime(&now);
-                string time = string(dt).c_str();
-                sv.savepicture( time,imgFrame2Copy);
-                record2 = 1;
-                
-                
-            }
-            else {
-                //cv::line(imgFrame2Copy, detectionline[0], detectionline[1], SCALAR_RED, 7);
-                cv::line(imgFrame2Copy, cv::Point(0,imgFrame1.size().height/2),cv::Point(imgFrame1.size().width,imgFrame1.size().height/2), SCALAR_RED, 2);
-                //  cv::line(imgFrame2Copy, cv::Point(imgFrame1.size().height,imgFrame1.size().width/2),cv::Point(imgFrame1.size().width/2,0), SCALAR_GREEN, 2);
-                
-            }
-            
+        bool blnAtLeastOneBlobCrossedTheLine = hasblobcrossed(blobs, line);
+
+        if (blnAtLeastOneBlobCrossedTheLine == true) {
+            time_t     now = time(0);
+            struct tm  tstruct;
+            char       buf[80];
+            tstruct = *localtime(&now);
+            std::unique_ptr<saver>sv(new saver);
+            strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+            sv->savepicture( string(buf).c_str(),imgFrame2Copy);
+            record = 1;
         }
-        else
+
+        if(blnAtLeastOneBlobCrossedTheLine == true)
         {
-            if (blnAtLeastOneBlobCrossedTheLine == true) {
-                // cv::line(imgFrame2Copy, detectionline[0], detectionline[1], SCALAR_GREEN, 7);
-                //  cv::line(imgFrame2Copy, cv::Point(0,imgFrame1.size().height/2),cv::Point(imgFrame1.size().width,imgFrame1.size().height/2), SCALAR_GREEN, 2);
-                time_t now = time(0);
-                char* dt = ctime(&now);
-                string time = string(dt).c_str();
-                sv.savepicture( time,imgFrame2Copy);
-                record = 1;
-                
-            }
-            
+            record = 1;
         }
-        //        if(blnAtLeastOneBlobCrossedTheLine == true)
-        //        {
-        //            record = 1;
-        
-        //        }
-        if(record == 1 || record2 == 1)
+        if(record == 1)
         {
-            if(rec == 50||rec2== 50)
+            if(rec == 50)
             {
+                shouldsend = false;
                 notify nt;
-                
-                ips.push_back(MainWindow::instance()->getTextIP());
-                ips.push_back(MainWindow::instance()->getTextIP2());
-                ips.push_back(MainWindow::instance()->getTextIP3());
-                if(record == 1)
+                if(!MainWindow::instance()->getTextIP().empty())
                 {
-                    std::thread t([&]{nt.notifyselected(ips);});
-                    t.join();
+                    ips.push_back(MainWindow::instance()->getTextIP());
+                    shouldsend = true;
                 }
-                else
+                if(!MainWindow::instance()->getTextIP2().empty())
+                {
+                    ips.push_back(MainWindow::instance()->getTextIP2());
+                    shouldsend = true;
+                }
+                if(!MainWindow::instance()->getTextIP3().empty())
+                {
+                    ips.push_back(MainWindow::instance()->getTextIP3());
+                    shouldsend = true;
+                }
+
+
+                if(shouldsend)
                 {
                     std::thread t([&]{nt.notifyselected(ips);});
-                    t.join();
+                    t.detach();
                 }
             }
-            
+
         }
-        if(i % 2 != 0)
+        if(record == 1)//merge with upper IF cond.
         {
-            if(record == 1)
+            rec++;
+            if(MainWindow::instance()->shouldrecord())
             {
-                
                 MATRIX.push_back(imgFrame3);
-                rec++;
-                if(rec == 500)
+
+                if(rec >= 500)
                 {
-                    
-                    time_t now = time(0);
-                    char* dt = ctime(&now);
-                    string time = string(dt).c_str();
-                    saver sv;
-                    std::thread t([&]{sv.savevideo(time,MATRIX);});
-                    t.join();
+                    time_t     now = time(0);
+                    struct tm  tstruct;
+                    char       buf[80];
+                    tstruct = *localtime(&now);
+                    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+                    std::unique_ptr<saver>sv(new saver);
+                    std::thread t([&]{sv->savevideo(string(buf).c_str(),MATRIX);});
+                    t.detach();
                     rec = 0;
                     record = 0;
-                    
                 }
             }
-        }
-        else
-        {
-            if(record2 == 1)
+            else
             {
-                
-                MATRIX2.push_back(imgFrame3);
-                rec2++;
-                if(rec2 == 500)
+                if(MATRIX.size()>0)
                 {
-                    
-                    time_t now = time(0);
-                    char* dt = ctime(&now);
-                    string time = string(dt).c_str();
-                    saver sv;
-                    std::thread t([&]{sv.savevideo(time,MATRIX2);});
-                    t.join();
-                    rec2 = 0;
-                    record2 = 0;
-                    
+                    rec = 0;
+                    MATRIX.clear();
+                    MATRIX.resize(0);
+                }
+                if(rec > 50)
+                {
+                    rec = 0;
                 }
             }
         }
-        
         cv::cvtColor(imgFrame2Copy,imgFrame2Copy,CV_BGR2RGB);
         img = QImage((const unsigned char*)(imgFrame2Copy.data),
                      imgFrame2Copy.cols,imgFrame2Copy.rows,QImage::Format_RGB888);
-        
-        if(i % 2 == 0)
-        {
-            MainWindow::instance()->updater1(img);
-            qApp->processEvents();
-        }
-        else
-        {
-            MainWindow::instance()->updater2(img);
-            qApp->processEvents();
-            
-        }
-        
-        
-        //        currentFrameBlobs.clear();
-
-        imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
-        
+        emit liveupdate(img,labelpos);
         if(imgFrame1.empty())
         {
-            //break;
-        }
-        // frameCount++;
-        //  i++;
-        
-        // convexHulls.clear();
-        // currentFrameBlobs.clear();
-        //blobs.clear();
-        //contours.clear();
-        // convexHulls.resize(0);
-        //currentFrameBlobs.resize(0);
-        //blobs.resize(0);
-        // contours.resize(0);
-        switch(i)
-        {
-        case 1:i = 2;
-            break;
-        case 2:i = 1;
             break;
         }
+
     }
 }
-
-
-void inline coreprocess::MatchCurrentFrameBlobsToExistingBlobsVector(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs) {
-    
-    for (auto &existingBlob : existingBlobs) {
-        
-        existingBlob.blnCurrentMatchFoundOrNewBlob = false;
-        
-        existingBlob.predictNextPosition();
-    }
-    
-    for (auto &currentFrameBlob : currentFrameBlobs) {
-        
-        int intIndexOfLeastDistance = 0;
-        double dblLeastDistance = 100000.0;
-        
-        for (unsigned int i = 0; i < existingBlobs.size(); i++) {
-            if (existingBlobs[i].blnStillBeingTracked == true) {
-                double dblDistance = CalcDistanceBetweenPoints(currentFrameBlob.centerPositions.back(), existingBlobs[i].predictedNextPosition);
-                
-                if (dblDistance < dblLeastDistance) {
-                    dblLeastDistance = dblDistance;
-                    intIndexOfLeastDistance = i;
-                }
-            }
-        }
-        
-        if (dblLeastDistance < currentFrameBlob.dblCurrentDiagonalSize * 1.15) {
-            InsertBlobToExistingBlobVector(currentFrameBlob, existingBlobs, intIndexOfLeastDistance);
-        }
-        else {
-            InsertNewBlobIntoVector(currentFrameBlob, existingBlobs);
-        }
-        
-    }
-    
-    for (auto &existingBlob : existingBlobs) {
-        
-        if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
-            existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
-        }
-        
-        if (existingBlob.intNumOfConsecutiveFramesWithoutAMatch >= 5) {
-            existingBlob.blnStillBeingTracked = false;
-        }
-        
-    }
-    
-}
-
-
-void inline coreprocess::InsertBlobToExistingBlobVector(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex) {
-    
-    existingBlobs[intIndex].currentContour = currentFrameBlob.currentContour;
-    existingBlobs[intIndex].currentBoundingRect = currentFrameBlob.currentBoundingRect;
-    
-    existingBlobs[intIndex].centerPositions.push_back(currentFrameBlob.centerPositions.back());
-    
-    existingBlobs[intIndex].dblCurrentDiagonalSize = currentFrameBlob.dblCurrentDiagonalSize;
-    existingBlobs[intIndex].dblCurrentAspectRatio = currentFrameBlob.dblCurrentAspectRatio;
-    
-    existingBlobs[intIndex].blnStillBeingTracked = true;
-    existingBlobs[intIndex].blnCurrentMatchFoundOrNewBlob = true;
-}
-
-
-void inline coreprocess::InsertNewBlobIntoVector(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs) {
-    
-    currentFrameBlob.blnCurrentMatchFoundOrNewBlob = true;
-    
-    existingBlobs.push_back(currentFrameBlob);
-}
-
-
-double inline coreprocess::CalcDistanceBetweenPoints(cv::Point point1, cv::Point point2) {
-    
-    int intX = abs(point1.x - point2.x);
-    int intY = abs(point1.y - point2.y);
-    
-    return(sqrt(pow(intX, 2) + pow(intY, 2)));
-}
-
 
 void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<std::vector<cv::Point> > contours) {
     cv::Mat image(MatSize, CV_8UC3, SCALAR_BLACK);
-    
     cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-    
-    
+
 }
 
-
+//renam to find contour
 void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<Blob> blobs) {
-    
     cv::Mat image(MatSize, CV_8UC3, SCALAR_BLACK);
-    
     std::vector<std::vector<cv::Point> > contours;
-    
     for (auto &blob : blobs) {
-        if (blob.blnStillBeingTracked == true) {
+        if (blob.ofinterest == true) {
             contours.push_back(blob.currentContour);
         }
     }
-    
     cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-    
     
 }
 
@@ -441,29 +239,22 @@ void inline coreprocess::DrawBlobInfoOnFrame(std::vector<Blob> &blobs, cv::Mat &
     
     for (unsigned int i = 0; i < blobs.size(); i++) {
         
-        if (blobs[i].blnStillBeingTracked == true) {
+        if (blobs[i].ofinterest == true) {
             cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
-            
-            //            int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
-            //            double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
-            //            int intFontThickness = (int)std::round(dblFontScale * 1.0);
-            
-            //  cv::putText(imgFrame2Copy, std::to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
         }
     }
 }
-bool inline coreprocess::hasblobcrossed(std::vector<Blob>&blob,int& theline,int& count)
+bool inline coreprocess::hasblobcrossed(std::vector<Blob>&blob,int& theline)
 {
     bool crossed = false;
     for(auto obj : blob)
     {
-        if(obj.blnStillBeingTracked == true)// && obj.centerPositions.size() > 2)
+        if(obj.ofinterest == true)// && obj.centerPositions.size() > 2)
         {
             //int prev = obj.centerPositions.size() - 2;
             int curr = obj.centerPositions.size() - 1;
-            if(obj.centerPositions[0].y > theline && obj.centerPositions[curr].y > theline)
+            if( obj.centerPositions[curr].y < theline)
             {
-                
                 crossed = true;
             }
             

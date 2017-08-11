@@ -10,7 +10,7 @@ class videointerface
 {
 public:
     videointerface();
-    vector<string> getavailablecams();
+    vector<int> getavailablecams();
 };
 
 #endif // VIDEOINTERFACE_H

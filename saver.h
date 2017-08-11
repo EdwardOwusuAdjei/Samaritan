@@ -14,8 +14,8 @@ class saver
 public:
 
     saver();
-    void savevideo(string& date,vector<Mat>& frame);
-    void savepicture(string& date,Mat frame);
+    void savevideo(const string& date,vector<Mat>& frame);
+    void savepicture(const string& date,Mat& frame);
 };
 
 #endif // SAVER_H

@@ -5,21 +5,19 @@ videointerface::videointerface()
 
 }
 
-vector<string> videointerface::getavailablecams()
+vector<int> videointerface::getavailablecams()
 {
-  //  cv::VideoCapture tempdetails;
     int max = 10;
-
-    for(int i=0;i<max;i++)
+    vector<int> interfaces;
+    for(int i=0 ;i < max; i++)
     {
-       cv::VideoCapture tempdetails(i);
-       bool couldopen = (!tempdetails.isOpened());
-       tempdetails.release();
-       if(couldopen)
-       {
-          // return i;
-       }
-
+        cv::VideoCapture tempdetails;
+        bool couldopen = tempdetails.open(i);
+        if(couldopen)
+        {
+            interfaces.push_back(i);
+        }
     }
-  //  return
+
+    return interfaces;
 }

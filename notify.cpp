@@ -1,5 +1,5 @@
 #include "notify.h"
-
+//TODO:: Linux - Only. Add Windows. Fix what happens to vector after return vals
 notify::notify()
 {
 
@@ -8,47 +8,47 @@ notify::notify()
 int notify::notifyselected(vector<string> &ip)
 {
     int sock;
-    struct sockaddr_in server;
-    //ADD ME: Check if its passed as valid ip
-    string alert = "MOTION";
-    char message[alert.size()+1];//to cater for the null term
+    try {
+        struct sockaddr_in server;
+        string alert = "MOTION";
+        char message[alert.size()+1];
 
-    //Create socket
-    for(int i = 0 ;i < ip.size(); i++)
-    {
-        sock = socket(AF_INET , SOCK_STREAM , 0);
-        if (sock == -1)
+        //Create socket
+        for(unsigned int i = 0 ;i < ip.size(); i++)
         {
-           // printf("Could not create socket");
+            sock = socket(AF_INET , SOCK_STREAM , 0);
+            if (sock == -1)
+            {
+                // printf("Could not create socket");
+            }
+            server.sin_addr.s_addr = inet_addr(ip[i].c_str());
+            server.sin_family = AF_INET;
+            server.sin_port = htons( 8888 );
+
+            //Connect to remote server
+            if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+            {
+                //connection fails then 1 is returned.
+                ip.clear();
+                ip.resize(0);
+                return 1;
+            }
+            strcpy(message, alert.c_str());
+            if( send(sock , message , strlen(message), 0) < 0)
+            {
+                ip.clear();
+                ip.resize(0);
+                return 1;
+            }
+
+            close(sock);
         }
-        server.sin_addr.s_addr = inet_addr(ip[i].c_str());
-        server.sin_family = AF_INET;
-        server.sin_port = htons( 8888 );
-
-        //Connect to remote server
-        if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
-        {
-            //connection fails then 1 is returned.
-            return 1;
-        }
-
-
-        strcpy(message, alert.c_str());
-
-     //  size_t imgsize = img.total()*img.elemSize();
-
-        if( send(sock , message , strlen(message), 0) < 0)
-        {
-
-            return 1;
-        }
-
-
-
-        // shutdown(sock,2);
+        ip.clear();
+        ip.resize(0);
+    } catch (...) {
+        ip.clear();
+        ip.resize(0);
         close(sock);
     }
-    ip.clear();
-    ip.resize(0);
     return 0;
 }

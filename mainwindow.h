@@ -2,12 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "threading.h"
+#include <QToolTip>
 #include <string>
-
-
-#include "facial.h"
+#include <vector>
 #include <future>
+#include <QMessageBox>
+#include "videointerface.h"
+#include "coreprocess.h"
+
+
 using namespace std;
 
 namespace Ui {
@@ -22,45 +25,45 @@ class MainWindow : public QMainWindow
 
 public:
 
-
     MainWindow* w;
     explicit MainWindow(QWidget *parent = 0);
-    void setWindowAddr(MainWindow window);
+    ~MainWindow();
+    static MainWindow* instance();
+    bool breakloop();
+    string getTextIP();
+    string getTextIP2();
+    string getTextIP3();
+    bool shouldrecord();
+    int sensitivity();
+private:
     void updater(QImage& img);
-    void updater1(QImage& img);
     void updater2(QImage& img);
     void updater3(QImage img);
     void updater4(QImage img);
     void updater5(QImage img);
     void updater6(QImage img);
-    void setthispointer(MainWindow* mw);
-    ~MainWindow();
-    static MainWindow* instance();
-    Threading *threads;
-
-    bool breakloop();
-    string getTextIP();
-    string getTextIP2();
-    string getTextIP3();
+    void begin(string url);
+    void begin(int idx);
+    void refresh();
 signals:
     void emithere(QImage img);
 public slots:
-    void updateit(QImage img);
+    void updateit(QImage img,int QTlabel);
 
 private slots:
 
+    void on_pushButton_2_clicked();
 
-    void on_radioButton_2_clicked(bool checked);
+    void on_pushButton_3_clicked();
 
-    void on_radioButton_2_toggled(bool checked);
+    void on_checkBox_toggled(bool checked);
+
+    void on_horizontalSlider_sliderMoved(int position);
+
+
+    void on_pushButton_4_clicked();
 
     void on_pushButton_clicked();
-
-
-
-    void on_comboBox_2_currentIndexChanged(const QString &arg1);
-
-    void on_pushButton_2_clicked();
 
 private:
     Ui::MainWindow *ui;
