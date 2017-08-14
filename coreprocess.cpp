@@ -133,10 +133,7 @@ void  coreprocess::aftermain()
             record = 1;
         }
 
-        if(blnAtLeastOneBlobCrossedTheLine == true)
-        {
-            record = 1;
-        }
+
         if(record == 1)
         {
             if(rec == 50)
@@ -200,6 +197,7 @@ void  coreprocess::aftermain()
                 if(rec > 50)
                 {
                     rec = 0;
+                    record=0;
                 }
             }
         }
@@ -215,14 +213,14 @@ void  coreprocess::aftermain()
     }
 }
 
-void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<std::vector<cv::Point> > contours) {
+void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<std::vector<cv::Point> >& contours) {
     cv::Mat image(MatSize, CV_8UC3, SCALAR_BLACK);
     cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
 
 }
 
 //renam to find contour
-void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<Blob> blobs) {
+void inline coreprocess::DrawContours(cv::Size MatSize, std::vector<Blob>& blobs) {
     cv::Mat image(MatSize, CV_8UC3, SCALAR_BLACK);
     std::vector<std::vector<cv::Point> > contours;
     for (auto &blob : blobs) {

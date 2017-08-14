@@ -64,8 +64,8 @@ public:
     std::thread aftermainthread();
 private:
 
-    void inline DrawContours(cv::Size MatSize, std::vector<std::vector<cv::Point> > contours);
-    void inline DrawContours(cv::Size MatSize, std::vector<Blob> blobs);
+    void inline DrawContours(cv::Size MatSize, std::vector<std::vector<cv::Point> >& contours);
+    void inline DrawContours(cv::Size MatSize, std::vector<Blob>& blobs);
     void inline DrawBlobInfoOnFrame(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
     bool inline hasblobcrossed(std::vector<Blob>&blob,int& theline);
 
