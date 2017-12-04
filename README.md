@@ -8,7 +8,7 @@ Samaritan is a fast computer vision application developed using QT and C++. Make
   - Detect motion of objects from two video sources simultaneously
   - Captures pictures when there is motion
   - Start recording a video when there is motion
-  - Sends a maximum of three computers an alerts on the network when there is a breach
+  - Sends a maximum of three computers an alert on the network when there is a breach
 
 To Use:
 
