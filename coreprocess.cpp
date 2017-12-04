@@ -105,7 +105,7 @@ void  coreprocess::aftermain()
                 currentFrameBlobs.push_back(possibleBlob);
             }
         }
-
+        ///draw a bit of contours on here
 
         DrawContours(imgThresh.size(), currentFrameBlobs);//image CurrentFrameBlobs
         
