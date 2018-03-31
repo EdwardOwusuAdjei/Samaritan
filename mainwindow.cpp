@@ -59,7 +59,7 @@ void MainWindow::updateit(QImage img,int label)
 {
     if(!img.isNull())
     {
-        labelsvector[label]->setPixmap(QPixmap::fromImage(img));
+         labelsvector[label]->setPixmap(QPixmap::fromImage(img));
     }
 
 }
@@ -178,7 +178,7 @@ void MainWindow::refresh()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    String url = ui->lineEdit_4->text().toStdString();
+    std::string url = ui->lineEdit_4->text().toStdString();
     try{
         begin(url);
         ui->lineEdit_4->clear();

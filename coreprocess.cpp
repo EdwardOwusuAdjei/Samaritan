@@ -105,7 +105,7 @@ void  coreprocess::aftermain()
                 currentFrameBlobs.push_back(possibleBlob);
             }
         }
-        ///draw a bit of contours on here
+
 
         DrawContours(imgThresh.size(), currentFrameBlobs);//image CurrentFrameBlobs
         
@@ -128,7 +128,7 @@ void  coreprocess::aftermain()
             char       buf[80];
             tstruct = *localtime(&now);
             std::unique_ptr<saver>sv(new saver);
-            strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+            strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", &tstruct);
             sv->savepicture( string(buf).c_str(),imgFrame2Copy);
             record = 1;
         }
@@ -140,6 +140,7 @@ void  coreprocess::aftermain()
             {
                 shouldsend = false;
                 notify nt;
+                //regex check for ips
                 if(!MainWindow::instance()->getTextIP().empty())
                 {
                     ips.push_back(MainWindow::instance()->getTextIP());
@@ -159,8 +160,18 @@ void  coreprocess::aftermain()
 
                 if(shouldsend)
                 {
-                    std::thread t([&]{nt.notifyselected(ips);});
+                    // vectors are created onheap..alright but without the
+                    //new keyword the content of imagebytes is filled with
+                    //strange characters on windows..works fine on linux
+                    //passing pointer will be okay..
+                    vector<uchar>* imagebytes = new vector<uchar>();
+                    cv::imencode(".jpg",imgFrame3.clone(),*imagebytes);
+                    std::thread t([&]{nt.notifyselected(ips,imagebytes);});
                     t.detach();
+                    //delete imagebytes;
+                   /* imagebytes->clear();
+                    imagebytes->shrink_to_fit()*/;
+
                 }
             }
 
@@ -178,7 +189,8 @@ void  coreprocess::aftermain()
                     struct tm  tstruct;
                     char       buf[80];
                     tstruct = *localtime(&now);
-                    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+                    //ntfs wouldnt support saving with strange characters...linux would
+                    strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", &tstruct);
                     std::unique_ptr<saver>sv(new saver);
                     std::thread t([&]{sv->savevideo(string(buf).c_str(),MATRIX);});
                     t.detach();

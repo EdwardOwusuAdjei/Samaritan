@@ -7,15 +7,15 @@
 
 
 using namespace std;
-using namespace cv;
+
 
 class saver
 {
 public:
 
     saver();
-    void savevideo(const string& date,vector<Mat>& frame);
-    void savepicture(const string& date,Mat& frame);
+    void savevideo(const string& date,vector<cv::Mat>& frame);
+    void savepicture(const string& date,cv::Mat& frame);
 };
 
 #endif // SAVER_H

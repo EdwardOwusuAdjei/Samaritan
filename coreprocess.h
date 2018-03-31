@@ -38,17 +38,17 @@ public:
     const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
     bool shouldsend = false;
     bool channelone = false;
-    Point detectionline[2];
+    cv::Point detectionline[2];
     int line =  0;
-    Mat imgFrame1;
-    Mat imgFrame2;
-    Mat imgFrame1Copy ;
-    Mat imgFrame2Copy ;
-    Mat imgFrame3;
-    Mat imgThreshCopy ;
+    cv::Mat imgFrame1;
+    cv::Mat imgFrame2;
+    cv::Mat imgFrame1Copy ;
+    cv::Mat imgFrame2Copy ;
+    cv::Mat imgFrame3;
+    cv::Mat imgThreshCopy ;
     QImage img;
-    Mat imgDifference;
-    Mat imgThresh;
+    cv::Mat imgDifference;
+    cv::Mat imgThresh;
     int record;
     int rec = 0;
     vector<string> ips;
@@ -56,7 +56,7 @@ public:
     cv::Mat structuringElement5x5;
 
 public:
-    VideoCapture vctry;
+    cv::VideoCapture vctry;
     coreprocess();
     void aftermain();
     bool canCapture(int source,int pos);
